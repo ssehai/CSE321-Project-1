@@ -14,6 +14,11 @@ TREE_ORDERS = [3, 5, 10]
 SEARCH_SAMPLE = 10_000
 DELETE_PROPORTIONS = [0.1, 0.2]
 RANGE_LOW, RANGE_HIGH = 202000000, 202100000
+RANGE_SELECTIVITY_QUERIES = [
+    ("Small", 202000000, 202010000),
+    ("Medium", 202000000, 202050000),
+    ("Large", 202000000, 202300000),
+]
 
 
 # ──────────────────────────────────────────────
@@ -153,6 +158,41 @@ def exp_range_query(records, btree, bstar, bplus,
 
 
 # ──────────────────────────────────────────────
+# Additional Experiment: Range Selectivity
+# ──────────────────────────────────────────────
+
+def exp_range_selectivity(records, btree, bstar, bplus,
+                          ranges=RANGE_SELECTIVITY_QUERIES):
+    """
+    Compare range query time as the queried Student ID interval grows.
+    """
+    print("=" * 60)
+    print("Additional Experiment: Range Selectivity")
+    print("=" * 60)
+
+    header = f"{'Range':>8} | {'Interval':>23} | {'Tree':>8} | {'Time(s)':>10} | {'Count':>8}"
+    print(header)
+    print("-" * len(header))
+
+    for label, lo, hi in ranges:
+        for name, tree in [("B-tree", btree), ("B*-tree", bstar), ("B+-tree", bplus)]:
+            t0 = time.perf_counter()
+            hits = tree.range_query(lo, hi)
+            result_rids = [rid for _, rid in hits]
+
+            male_count = 0
+            for rid in result_rids:
+                if records[rid]['gender'] == 'Male':
+                    male_count += 1
+
+            elapsed = time.perf_counter() - t0
+            interval = f"[{lo}, {hi}]"
+            print(f"{label:>8} | {interval:>23} | {name:>8} | {elapsed:>10.4f} | {male_count:>8}")
+
+    print()
+
+
+# ──────────────────────────────────────────────
 # Experiment 4: Deletion & Structural Integrity
 # ──────────────────────────────────────────────
 
@@ -206,6 +246,7 @@ def main():
     print()
     exp_point_search(records, btree, bstar, bplus)
     exp_range_query(records, btree, bstar, bplus)
+    exp_range_selectivity(records, btree, bstar, bplus)
     exp_deletion(records)
 
 
