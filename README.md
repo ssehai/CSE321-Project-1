@@ -24,6 +24,7 @@ Analysis of B-tree Index Structures".
 - Required external dependencies: none
 
 Only the Python standard library is used.
+No compilation step is required because the project is written in Python.
 
 ## How to Run the Experiments
 
@@ -51,6 +52,11 @@ TREE_ORDERS = [3, 5, 10]
 SEARCH_SAMPLE = 10_000
 DELETE_PROPORTIONS = [0.1, 0.2]
 RANGE_LOW, RANGE_HIGH = 202000000, 202100000
+RANGE_SELECTIVITY_QUERIES = [
+    ("Small", 202000000, 202010000),
+    ("Medium", 202000000, 202050000),
+    ("Large", 202000000, 202300000),
+]
 ```
 
 The point search and range query experiments use trees built with:
@@ -161,3 +167,22 @@ For each tree and order, it reports:
 - node utilization after deletion
 
 The tree implementations handle underflow using redistribution and/or merging.
+
+## Additional Experiment
+
+The script also runs a range selectivity experiment using the same B-tree,
+B*-tree, and B+-tree indexes built with `d = 10`.
+
+This experiment repeats range queries with three Student ID intervals:
+
+- Small: `[202000000, 202010000]`
+- Medium: `[202000000, 202050000]`
+- Large: `[202000000, 202300000]`
+
+For each tree and interval, the script reports:
+
+- total range query time
+- qualifying male-student count
+
+This additional experiment is used to observe how range query performance
+changes as the queried interval becomes larger.
